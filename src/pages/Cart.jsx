@@ -1,6 +1,6 @@
 import React from 'react'
 import { useCart, useDispatchCart } from '../components/ContextReducer'
-import { backendurl } from '../Apipath';
+//import { backendurl } from '../Apipath';
 
 const DeleteIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -26,7 +26,7 @@ export default function Cart() {
   const handleCheckOut = async () => {
     let userEmail = localStorage.getItem("userEmail");
     // console.log(data,localStorage.getItem("userEmail"),new Date())
-    let response = await fetch(`${backendurl}/api/orderData`, {
+    let response = await fetch('https://epiceats-backend-qyk8.onrender.com/register/api/orderData', {
       // credentials: 'include',
       // Origin:"http://localhost:3000/login",
       method: 'POST',

@@ -2,7 +2,7 @@ import React, {useState,useEffect} from 'react'
 import Footer from '../components/Footer'
 import Card from '../components/Card'
 import axios from 'axios';
-import { backendurl } from '../Apipath';
+//import { backendurl } from '../Apipath';
 
 const Home = () => {
 
@@ -12,8 +12,8 @@ const Home = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const itemsRes = await axios.get(`${backendurl}/api/food-items`);
-        const categoriesRes = await axios.get(`${backendurl}/api/food-categories`);
+        const itemsRes = await axios.get('https://epiceats-backend-qyk8.onrender.com/api/food-items')
+        const categoriesRes = await axios.get('https://epiceats-backend-qyk8.onrender.com/api/food-categories')
         setFoodItems(itemsRes.data);
         setFoodCategories(categoriesRes.data);
         console.log("Food Items:", itemsRes.data);

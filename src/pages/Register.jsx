@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { backendurl } from '../Apipath';
+// import { backendurl } from '../Apipath';
 
 const Register = () => {
 
@@ -48,7 +48,7 @@ const Register = () => {
     if (Object.values(errors).some(e => e)) return;
 
 
-    const response = await fetch(`${backendurl}/register`, {
+    const response = await fetch('https://epiceats-backend-qyk8.onrender.com/register', {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(credentials)

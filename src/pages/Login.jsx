@@ -1,7 +1,7 @@
 import React, {useState}from 'react'
 import { useEffect } from "react";
 import {useNavigate} from 'react-router-dom'
-import { backendurl } from '../Apipath';
+// import { backendurl } from '../Apipath';
 
 const Login = () => {
   useEffect(() => {
@@ -12,7 +12,7 @@ const Login = () => {
 
   const handleSumbit = async (e) => {
     e.preventDefault()
-    const response = await fetch(`${backendurl}/login`, {
+    const response = await fetch('https://epiceats-backend-qyk8.onrender.com/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
