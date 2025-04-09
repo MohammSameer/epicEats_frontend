@@ -7,6 +7,8 @@ import Register from './pages/Register'
 import '../node_modules/bootstrap/dist/js/bootstrap.bundle'
 import { CartProvider } from './components/ContextReducer'
 import Myorder from './pages/Myorder'
+ 
+
 
 const App = () => {
   return (
@@ -17,7 +19,6 @@ const App = () => {
           <Route path='/' element={<Home />} />
           <Route path='/Login' element={<Login />} />
           <Route path='/Register' element={<Register />} />
-          <Route path="/my-order" element={user ? <Myorder user={user} /> : <Navigate to="/login" />} />
           <Route path='/Myorder' element={<Myorder />} />
         </Routes>
       </Router>
