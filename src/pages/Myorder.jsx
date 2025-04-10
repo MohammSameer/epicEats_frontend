@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import Footer from '../components/Footer';
-//import { backendurl } from '../Apipath';
+import { backendurl } from '../Apipath';
 
 export default function MyOrder() {
     const [orderData, setOrderData] = useState({});
 
     const fetchMyOrder = async () => {
         console.log(localStorage.getItem('userEmail'));
-        await fetch('https://epiceats-backend-qyk8.onrender.com/api/myOrderData', {
+        await fetch(`${backendurl}/api/myOrderData`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
