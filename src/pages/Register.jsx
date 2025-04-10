@@ -67,43 +67,43 @@ const Register = () => {
       <h1 style={{ textAlign: "center", marginTop: "10px", marginBottom: "40px", textShadow: "4px 4px 8px rgba(0, 0, 0, 0.4)" }}>Registration</h1>
 
       <form onSubmit={handleSubmit} style={{ alignContent: "center", border: "3px solid black", width: "50%", maxWidth: "600px", borderRadius: "10px", backgroundColor: "#f8f9fa", padding: "10px", boxShadow: "4px 4px 10px rgba(0, 0, 0, 0.3)" }}>
-        <div class="row">
-          <div class="col">
+        <div className="row">
+          <div className="col">
             <label htmlFor="exampleFirstName" style={{ fontWeight: "bold" }}>First Name</label>
-            <input type="text" class="form-control" name='firstName' value={credentials.firstName} placeholder="First name" onChange={onchange} aria-label="First name" />
+            <input type="text" className="form-control" name='firstName' value={credentials.firstName} placeholder="First name" onChange={onchange} aria-label="First name" />
             {errors.firstName && <div className="text-danger">{errors.firstName}</div>}
           </div>
-          <div class="col">
+          <div className="col">
             <label htmlFor="exampleLastName" style={{ fontWeight: "bold" }}>Last Name</label>
-            <input type="text" class="form-control" name='lastName' value={credentials.lastName} placeholder="Last name" onChange={onchange} aria-label="Last name" />
+            <input type="text" className="form-control" name='lastName' value={credentials.lastName} placeholder="Last name" onChange={onchange} aria-label="Last name" />
             {errors.lastName && <div className="text-danger">{errors.lastName}</div>}
           </div>
         </div>
-        <div class="mb-2">
-          <label htmlFor="exampleInputEmail1" class="form-label" style={{ fontWeight: "bold" }} >Email Address</label>
-          <input type="email" class="form-control" name='email' value={credentials.email} id="exampleInputEmail1" onChange={onchange} aria-describedby="emailHelp" placeholder="Enter your email" />
+        <div className="mb-2">
+          <label htmlFor="exampleInputEmail1" className="form-label" style={{ fontWeight: "bold" }} >Email Address</label>
+          <input type="email" className="form-control" name='email' value={credentials.email} id="exampleInputEmail1" onChange={onchange} aria-describedby="emailHelp" placeholder="Enter your email" />
           {errors.email && <div className="text-danger">{errors.email}</div>}
-          <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
+          <div id="emailHelp" className="form-text">We'll never share your email with anyone else.</div>
         </div>
-        <div class="mb-2">
-          <label htmlFor="phoneNumber" class="form-label" style={{ fontWeight: "bold" }} >Phone Number</label>
-          <input type="number" class="form-control" name='phoneNumber' id="phoneNumber" value={credentials.phoneNumber} aria-describedby="number" onChange={onchange} placeholder="Enter your moblie number" />
+        <div className="mb-2">
+          <label htmlFor="phoneNumber" className="form-label" style={{ fontWeight: "bold" }} >Phone Number</label>
+          <input type="number" className="form-control" name='phoneNumber' id="phoneNumber" value={credentials.phoneNumber} aria-describedby="number" onChange={onchange} placeholder="Enter your moblie number" />
           {errors.phoneNumber && <div className="text-danger">{errors.phoneNumber}</div>}
         </div>
-        <div class="mb-2">
-          <label htmlFor="exampleInputPassword1" class="form-label" style={{ fontWeight: "bold" }} >Password</label>
-          <input type="password" class="form-control" id="exampleInputPassword1" name='password' value={credentials.password} onChange={onchange} placeholder="Enter password" />
+        <div className="mb-2">
+          <label htmlFor="exampleInputPassword1" className="form-label" style={{ fontWeight: "bold" }} >Password</label>
+          <input type="password" className="form-control" id="exampleInputPassword1" name='password' value={credentials.password} onChange={onchange} placeholder="Enter password" />
           {errors.password && <div className="text-danger">{errors.password}</div>}
         </div>
-        <div id="passwordHelpBlock" class="form-text">
+        <div id="passwordHelpBlock" className="form-text">
           Your password must be 8-20 characters long, contain letters and numbers, and must not contain spaces, special characters, or emoji.
         </div>
-        <div class="mb-2">
-          <label htmlFor="confirmPassword" class="form-label" style={{ fontWeight: "bold" }} >Confirm Password</label>
-          <input type="password" class="form-control" id="confirmPassword" name='confirmPassword' value={credentials.confirmPassword} onChange={onchange} placeholder="Renter same password" />
+        <div className="mb-2">
+          <label htmlFor="confirmPassword" className="form-label" style={{ fontWeight: "bold" }} >Confirm Password</label>
+          <input type="password" className="form-control" id="confirmPassword" name='confirmPassword' value={credentials.confirmPassword} onChange={onchange} placeholder="Renter same password" />
           {errors.confirmPassword && <div className="text-danger">{errors.confirmPassword}</div>}
         </div>
-        <button type="submit" class="btn btn-primary">Register</button>
+        <button type="submit" className="btn btn-primary">Register</button>
         <a className='m-3 btn btn-danger' href='./Login' style={{ marginLeft: "300px" }}>click here to login</a>
       </form>
     </div>

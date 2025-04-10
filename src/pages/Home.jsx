@@ -63,7 +63,7 @@ const Home = () => {
           {foodCategories.map((category) => (
             <div key={category.CategoryName} className="my-3">
               <h2 className='text-start mb-2 text-xl font-bold '>{category.CategoryName}</h2>
-              <br />
+              <br/>
               <div className='d-flex flex-wrap gap-4'>
                 {
                   foodItems

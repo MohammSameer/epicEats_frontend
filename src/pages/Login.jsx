@@ -42,20 +42,20 @@ const Login = () => {
       <h1 style={{ marginTop: "50px", marginLeft: "660px", width: "100%", textShadow: "4px 4px 8px rgba(0, 0, 0, 0.4)" }}>Sign In</h1>
       <div style={{ marginTop: "50px", marginLeft: "400px", height: "100px", width: "50%" }}>
         <form onSubmit={handleSumbit} style={{ padding: "10px", maxWidth: "700px", border: "3px solid black", borderRadius: "10px", backgroundColor: "#f8f9fa", boxShadow: "4px 4px 10px rgba(0, 0, 0, 0.3)" }}>
-          <div class="mb-1">
-            <label style={{ fontWeight: "bold" }} for="exampleInputEmail1" class="form-label" >Email Address</label>
-            <input type="email" class="form-control" id="exampleInputEmail1" name='email' value={credentials.email} onChange={onchange} placeholder="Enter your email" />
-            <div id="emailHelp" class="form-text"></div>
+          <div className="mb-1">
+            <label style={{ fontWeight: "bold" }} htmlFor="exampleInputEmail1" className="form-label" >Email Address</label>
+            <input type="email" className="form-control" id="exampleInputEmail1" name='email' value={credentials.email} onChange={onchange} placeholder="Enter your email" />
+            <div id="emailHelp" className="form-text"></div>
           </div>
-          <div class="mb-1">
-            <label style={{ fontWeight: "bold" }} for="exampleInputPassword1" class="form-label">Password</label>
-            <input type="password" class="form-control" id="exampleInputPassword1" name='password' value={credentials.password} onChange={onchange} placeholder='Enter password' />
-            <div id="passwordHelpBlock" class="form-text">
+          <div className="mb-1">
+            <label style={{ fontWeight: "bold" }} htmlFor="exampleInputPassword1" className="form-label">Password</label>
+            <input type="password" className="form-control" id="exampleInputPassword1" name='password' value={credentials.password} onChange={onchange} placeholder='Enter password' />
+            <div id="passwordHelpBlock" className="form-text">
               Your password must be 8-20 characters long, contain letters and numbers, and must not contain spaces, special characters, or emoji.
             </div>
           </div>
-          <button type="submit" class="btn btn-primary">Login</button>
-          <label for="newUser" style={{ fontWeight: "bold", marginLeft: "300px" }} >If New User:</label>
+          <button type="submit" className="btn btn-primary">Login</button>
+          <label htmlFor="newUser" style={{ fontWeight: "bold", marginLeft: "300px" }} >If New User:</label>
           <a href='/Register' className='m-3 btn btn-danger' aria-current="page" style={{ marginLeft: "15px", textAlign: "right" }}>click here to register</a>
         </form>
       </div>
