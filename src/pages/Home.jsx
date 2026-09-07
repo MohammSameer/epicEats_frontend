@@ -6,24 +6,67 @@ import axios from 'axios';
 
 const Home = () => {
 
-  const[search, setSearch] = useState('')
+  const [search, setSearch] = useState('')
   const [foodItems, setFoodItems] = useState([]);
   const [foodCategories, setFoodCategories] = useState([]);
+  const [page, setPage] = useState(1);
+  const [pages, setPages] = useState(1);
+  const [loading, setLoading] = useState(false);
+
+  // fetch categories once and initial page of items
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchInitial = async () => {
       try {
-        const itemsRes = await axios.get('https://epiceats-backend-qyk8.onrender.com/api/food-items')
-        const categoriesRes = await axios.get('https://epiceats-backend-qyk8.onrender.com/api/food-categories')
-        setFoodItems(itemsRes.data);
+        setLoading(true);
+        const [categoriesRes, itemsRes] = await Promise.all([
+          axios.get('https://epiceats-backend-qyk8.onrender.com/api/food-categories'),
+          axios.get('https://epiceats-backend-qyk8.onrender.com/api/food-items', { params: { page: 1, limit: 50 } })
+        ]);
+
         setFoodCategories(categoriesRes.data);
-        console.log("Food Items:", itemsRes.data);
-        console.log("Food Categories:", categoriesRes.data);
+
+        // if backend returns wrapped object { items, total, page, pages }
+        const itemsPayload = itemsRes.data.items || itemsRes.data;
+        setFoodItems(itemsPayload);
+        setPage(itemsRes.data.page || 1);
+        setPages(itemsRes.data.pages || 1);
+
+        // simple session cache to avoid re-fetch on navigation
+        try { sessionStorage.setItem('foodItems_page_1', JSON.stringify(itemsPayload)); } catch (e) {}
       } catch (err) {
         console.error("Error fetching data:", err);
+      } finally {
+        setLoading(false);
       }
     };
-    fetchData();
+    fetchInitial();
   }, []);
+
+  // load a specific page (used by Load more)
+  const loadPage = async (nextPage) => {
+    if (nextPage > pages) return;
+    const cacheKey = `foodItems_page_${nextPage}`;
+    const cached = sessionStorage.getItem(cacheKey);
+    if (cached) {
+      setFoodItems(prev => [...prev, ...JSON.parse(cached)]);
+      setPage(nextPage);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await axios.get('https://epiceats-backend-qyk8.onrender.com/api/food-items', { params: { page: nextPage, limit: 50 } });
+      const itemsPayload = res.data.items || res.data;
+      setFoodItems(prev => [...prev, ...itemsPayload]);
+      setPage(res.data.page || nextPage);
+      setPages(res.data.pages || pages);
+      try { sessionStorage.setItem(cacheKey, JSON.stringify(itemsPayload)); } catch (e) {}
+    } catch (err) {
+      console.error('Failed to load page', nextPage, err);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <>
@@ -70,6 +113,7 @@ const Home = () => {
                     .filter(item => (item.CategoryName.toLowerCase() === category.CategoryName.toLowerCase()) && (item.name.toLowerCase().includes(search.toLocaleLowerCase())))
                     .map(item => (
                       <Card
+                        key={item._id || item.id}
                         foodItems={item}
                         options={item.options}
                       />
@@ -78,6 +122,13 @@ const Home = () => {
               </div>
             </div>
           ))}
+        </div>
+
+        <div className="container text-center my-4">
+          {loading && <div>Loading...</div>}
+          {!loading && page < pages && (
+            <button className="btn btn-primary" onClick={() => loadPage(page + 1)}>Load more</button>
+          )}
         </div>
 
         <Footer />

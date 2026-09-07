@@ -1,16 +1,22 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useDispatchCart, useCart } from './ContextReducer';
+import { useNavigate } from 'react-router-dom';
 function Card(props) {
     let dispatch = useDispatchCart()
     let options = props.options
     let priceOptions = options.length > 0 ? Object.keys(options[0]) : [];
     let data = useCart()
     let priceRef = useRef()
+    const navigate = useNavigate();
     const [qty, setQty] = useState(1)
     const [size, setSize] = useState(priceOptions[0] || "")
     const [finalPrice, setFinalPrice] = useState(0);
 
     const handleAddtocart = async () => {
+        if (!localStorage.getItem("authToken")) {
+            navigate('/Login')
+            return
+        }
         let food = []
         for (const item of data) {
             if (item.id === props.foodItems._id) {
