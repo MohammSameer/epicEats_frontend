@@ -2,7 +2,7 @@ import React, {useState,useEffect} from 'react'
 import Footer from '../components/Footer'
 import Card from '../components/Card'
 import axios from 'axios';
-//import { backendurl } from '../Apipath';
+import { backendurl } from '../Apipath';
 
 const Home = () => {
 
@@ -19,8 +19,8 @@ const Home = () => {
       try {
         setLoading(true);
         const [categoriesRes, itemsRes] = await Promise.all([
-          axios.get('https://epiceats-backend-qyk8.onrender.com/api/food-categories'),
-          axios.get('https://epiceats-backend-qyk8.onrender.com/api/food-items', { params: { page: 1, limit: 50 } })
+          axios.get(`${backendurl}/api/food-categories`),
+          axios.get(`${backendurl}/api/food-items`, { params: { page: 1, limit: 50 } })
         ]);
 
         setFoodCategories(categoriesRes.data);
@@ -55,7 +55,7 @@ const Home = () => {
 
     setLoading(true);
     try {
-      const res = await axios.get('https://epiceats-backend-qyk8.onrender.com/api/food-items', { params: { page: nextPage, limit: 50 } });
+      const res = await axios.get(`${backendurl}/api/food-items`, { params: { page: nextPage, limit: 50 } });
       const itemsPayload = res.data.items || res.data;
       setFoodItems(prev => [...prev, ...itemsPayload]);
       setPage(res.data.page || nextPage);
