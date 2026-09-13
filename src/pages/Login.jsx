@@ -1,66 +1,49 @@
-import React, {useState}from 'react'
-import { useEffect } from "react";
-import {useNavigate} from 'react-router-dom'
- import { backendurl } from '../Apipath';
+import React, { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { backendurl } from '../Apipath';
 
 const Login = () => {
-  useEffect(() => {
-    document.body.style.backgroundColor = "#f0f0f0";
-  });
-  let navigate=useNavigate()
-  const [credentials, setcredentials] = useState({ email: "", password: "" })
+  const navigate = useNavigate()
+  const [credentials, setCredentials] = useState({ email: "", password: "" })
+  const [error, setError] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleSumbit = async (e) => {
     e.preventDefault()
-    const response = await fetch(`${backendurl}/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ email: credentials.email, password: credentials.password })
-    })
-    const json = await response.json()
-    console.log(json)
-    if (!json.success) {
-      console.log(json.errors)
-      alert("Enter valid credentials")
-    }
-    else{
-    alert('successfully logged in...')
-    localStorage.setItem("userEmail", credentials.email)
-    localStorage.setItem("authToken",json.authToken)
-    console.log(localStorage.getItem("authToken"))
-      navigate("/")
+    setError("")
+    setIsSubmitting(true)
+    try {
+      const response = await fetch(`${backendurl}/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: credentials.email, password: credentials.password })
+      })
+      const json = await response.json()
+      if (!json.success) {
+        setError("Those details don't match an account. Please try again.")
+      } else {
+        localStorage.setItem("userEmail", credentials.email)
+        localStorage.setItem("authToken", json.authToken)
+        navigate("/")
+      }
+    } catch (err) {
+      setError("We couldn't reach the kitchen right now. Please try again.")
+    } finally {
+      setIsSubmitting(false)
     }
   }
   const onchange = (event) => {
-    setcredentials({...credentials, [event.target.name]: event.target.value })
+    setCredentials({...credentials, [event.target.name]: event.target.value })
   }
 
   return (
-    <>
-      <h1 style={{ marginTop: "50px", marginLeft: "660px", width: "100%", textShadow: "4px 4px 8px rgba(0, 0, 0, 0.4)" }}>Sign In</h1>
-      <div style={{ marginTop: "50px", marginLeft: "400px", height: "100px", width: "50%" }}>
-        <form onSubmit={handleSumbit} style={{ padding: "10px", maxWidth: "700px", border: "3px solid black", borderRadius: "10px", backgroundColor: "#f8f9fa", boxShadow: "4px 4px 10px rgba(0, 0, 0, 0.3)" }}>
-          <div className="mb-1">
-            <label style={{ fontWeight: "bold" }} htmlFor="exampleInputEmail1" className="form-label" >Email Address</label>
-            <input type="email" className="form-control" id="exampleInputEmail1" name='email' value={credentials.email} onChange={onchange} placeholder="Enter your email" />
-            <div id="emailHelp" className="form-text"></div>
-          </div>
-          <div className="mb-1">
-            <label style={{ fontWeight: "bold" }} htmlFor="exampleInputPassword1" className="form-label">Password</label>
-            <input type="password" className="form-control" id="exampleInputPassword1" name='password' value={credentials.password} onChange={onchange} placeholder='Enter password' />
-            <div id="passwordHelpBlock" className="form-text">
-              Your password must be 8-20 characters long, contain letters and numbers, and must not contain spaces, special characters, or emoji.
-            </div>
-          </div>
-          <button type="submit" className="btn btn-primary">Login</button>
-          <label htmlFor="newUser" style={{ fontWeight: "bold", marginLeft: "300px" }} >If New User:</label>
-          <a href='/Register' className='m-3 btn btn-danger' aria-current="page" style={{ marginLeft: "15px", textAlign: "right" }}>click here to register</a>
-        </form>
-      </div>
-
-    </>
+    <main className="auth-page"><section className="auth-panel auth-panel-login">
+      <div className="auth-aside"><span className="eyebrow">Welcome back</span><h1>Good food is better shared.</h1><p>Sign in to pick up where you left off and get your favourites on the way.</p><span className="auth-aside-mark">✦</span></div>
+      <form className="auth-form" onSubmit={handleSumbit}><div className="form-heading"><span className="form-icon">↗</span><h2>Sign in</h2><p>Enter your details to continue.</p></div>
+        <div className="field-group"><label htmlFor="login-email">Email address</label><input type="email" id="login-email" name="email" value={credentials.email} onChange={onchange} placeholder="you@example.com" required /></div>
+        <div className="field-group"><label htmlFor="login-password">Password</label><input type="password" id="login-password" name="password" value={credentials.password} onChange={onchange} placeholder="Your password" required /></div>
+        {error && <p className="form-error" role="alert">{error}</p>}<button type="submit" className="primary-button" disabled={isSubmitting}>{isSubmitting ? "Signing in..." : "Sign in"}<span>→</span></button><p className="auth-switch">New to EpicEats? <Link to="/Register">Create an account</Link></p>
+      </form></section></main>
   )
 }
 

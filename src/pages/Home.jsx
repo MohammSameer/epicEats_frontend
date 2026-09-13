@@ -2,88 +2,108 @@ import React, {useState,useEffect} from 'react'
 import Footer from '../components/Footer'
 import Card from '../components/Card'
 import axios from 'axios';
-//import { backendurl } from '../Apipath';
+import { backendurl } from '../Apipath';
 
 const Home = () => {
 
-  const[search, setSearch] = useState('')
+  const [search, setSearch] = useState('')
   const [foodItems, setFoodItems] = useState([]);
   const [foodCategories, setFoodCategories] = useState([]);
+  const [page, setPage] = useState(1);
+  const [pages, setPages] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [activeCategory, setActiveCategory] = useState('All');
+
+  // fetch categories once and initial page of items
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchInitial = async () => {
       try {
-        const itemsRes = await axios.get('https://epiceats-backend-qyk8.onrender.com/api/food-items')
-        const categoriesRes = await axios.get('https://epiceats-backend-qyk8.onrender.com/api/food-categories')
-        setFoodItems(itemsRes.data);
+        setLoading(true);
+        const [categoriesRes, itemsRes] = await Promise.all([
+          axios.get(`${backendurl}/api/food-categories`),
+          axios.get(`${backendurl}/api/food-items`, { params: { page: 1, limit: 50 } })
+        ]);
+
         setFoodCategories(categoriesRes.data);
-        console.log("Food Items:", itemsRes.data);
-        console.log("Food Categories:", categoriesRes.data);
+
+        // if backend returns wrapped object { items, total, page, pages }
+        const items = itemsRes.data.items || itemsRes.data;
+        setFoodItems(items);
+        setPage(itemsRes.data.page || 1);
+        setPages(itemsRes.data.pages || 1);
+
+        // simple session cache to avoid re-fetch on navigation
+        try { sessionStorage.setItem('foodItems_page_1', JSON.stringify(items)); } catch (e) {}
       } catch (err) {
         console.error("Error fetching data:", err);
+      } finally {
+        setLoading(false);
       }
     };
-    fetchData();
+    fetchInitial();
   }, []);
 
+  // load a specific page (used by Load more)
+  const loadPage = async (nextPage) => {
+    if (nextPage > pages) return;
+    const cacheKey = `foodItems_page_${nextPage}`;
+    let cached = null;
+    try {
+      cached = sessionStorage.getItem(cacheKey);
+    } catch (err) {
+      // Continue with the API request when browser storage is unavailable.
+    }
+    if (cached) {
+      try {
+        setFoodItems(prev => [...prev, ...JSON.parse(cached)]);
+        setPage(nextPage);
+        return;
+      } catch (err) {
+        // Ignore malformed cache data and refresh this page from the API.
+      }
+    }
+
+    setLoading(true);
+    try {
+      const res = await axios.get(`${backendurl}/api/food-items`, { params: { page: nextPage, limit: 50 } });
+      const itemsPayload = res.data.items || res.data;
+      setFoodItems(prev => [...prev, ...itemsPayload]);
+      setPage(res.data.page || nextPage);
+      setPages(res.data.pages || pages);
+      try { sessionStorage.setItem(cacheKey, JSON.stringify(itemsPayload)); } catch (e) {}
+    } catch (err) {
+      console.error('Failed to load page', nextPage, err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const visibleItems = foodItems.filter(item =>
+    item.name.toLowerCase().includes(search.toLowerCase()) &&
+    (activeCategory === 'All' || item.CategoryName.toLowerCase() === activeCategory.toLowerCase())
+  );
+
   return (
-    <>
-      <div>
-        <h1 style={{ textShadow: "4px 4px 8px rgba(0, 0, 0, 0.4)" }} align="center" >Welcome to EpicEats</h1>
-        <h5 style={{ color: "#FF6B6B" }} align="center">Your favourite food at your door</h5>
-
-        <div id="carouselExampleInterval" className="carousel slide" data-bs-ride="carousel" style={{objectFit:"contain !important"}}>
-          <div className="carousel-inner">
-            <div className='carousel-caption' style={{ zIndex: "5" }}>
-              <div className="d-flex justify-contain-center" role="search" value={search} onChange={(e)=> {setSearch(e.target.value)}} >
-                <input className="form-control me-2" style={{backgroundColor:"lightgray"}} type="search" placeholder="Search" aria-label="Search" />
-                {/*<button className="btn btn-outline-success text-white "  type="submit">Search</button> */}
-              </div>
-            </div>
-            <div className="carousel-item active" data-bs-interval="10000">
-              <img src="https://recipe30.com/wp-content/uploads/2023/03/chicken-Biryani.jpg" className="d-block w-100" style={{ height: "80vh", objectFit: "cover", filter: "brightness(60%)" }} alt="..." />
-            </div>
-            <div className="carousel-item" data-bs-interval="2000">
-              <img src="https://t4.ftcdn.net/jpg/02/17/39/75/360_F_217397519_MqLzfynUsUKGvZj1AB3iPREmr11sYRhk.jpg" className="d-block w-100" style={{ height: "80vh", objectFit: "cover", filter: "brightness(60%)" }} alt="..." />
-            </div>
-            <div className="carousel-item">
-              <img src="https://t3.ftcdn.net/jpg/03/26/99/68/360_F_326996869_1JxpM9nKmKXYu4dGpFCIIx4aKhYmLSwC.jpg" className="d-block w-100" style={{ height: "80vh", objectFit: "cover", filter: "brightness(60%)" }} alt="..." />
-            </div>
-          </div>
-          <button className="carousel-control-prev" type="button" data-bs-target="#carouselExampleInterval" data-bs-slide="prev">
-            <span className="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span className="visually-hidden">Previous</span>
-          </button>
-          <button className="carousel-control-next" type="button" data-bs-target="#carouselExampleInterval" data-bs-slide="next">
-            <span className="carousel-control-next-icon" aria-hidden="true"></span>
-            <span className="visually-hidden">Next</span>
-          </button>
-        </div>
-
-        <div className="container my-4">
-          {foodCategories.map((category) => (
-            <div key={category.CategoryName} className="my-3">
-              <h2 className='text-start mb-2 text-xl font-bold '>{category.CategoryName}</h2>
-              <br/>
-              <div className='d-flex flex-wrap gap-4'>
-                {
-                  foodItems
-                    .filter(item => (item.CategoryName.toLowerCase() === category.CategoryName.toLowerCase()) && (item.name.toLowerCase().includes(search.toLocaleLowerCase())))
-                    .map(item => (
-                      <Card
-                        foodItems={item}
-                        options={item.options}
-                      />
-                    ))
-                }
-              </div>
-            </div>
-          ))}
-        </div>
+    <main className="home-page">
+      <section className="home-hero">
+        <div className="hero-copy"><span className="eyebrow">Made for your mood</span><h1>Something delicious is on its way.</h1><p>Comfort food, fresh flavours, and the kind of meals that make an ordinary day feel better.</p>
+          <div className="home-search"><span>⌕</span><input type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="What are you craving today?" aria-label="Search menu" />{search && <button type="button" onClick={() => setSearch('')} aria-label="Clear search">×</button>}</div>
+        </div><div className="hero-note"><span>01</span><p>Fresh from local kitchens<br />to your door.</p></div>
+      </section>
+      <section className="menu-section container">
+        <div className="section-heading"><div><span className="eyebrow">Explore the menu</span><h2>Find your next favourite</h2></div><span className="item-count">{visibleItems.length} dishes</span></div>
+        <div className="category-list" aria-label="Food categories"><button className={activeCategory === 'All' ? 'category-chip active' : 'category-chip'} onClick={() => setActiveCategory('All')}>All dishes</button>{foodCategories.map(category => <button key={category.CategoryName} className={activeCategory === category.CategoryName ? 'category-chip active' : 'category-chip'} onClick={() => setActiveCategory(category.CategoryName)}>{category.CategoryName}</button>)}</div>
+        {loading && foodItems.length === 0 ? <div className="menu-state">Preparing the menu...</div> : foodCategories.map((category) => {
+          const categoryItems = visibleItems.filter(item => item.CategoryName.toLowerCase() === category.CategoryName.toLowerCase());
+          if (!categoryItems.length || (activeCategory !== 'All' && activeCategory.toLowerCase() !== category.CategoryName.toLowerCase())) return null;
+          return <div key={category.CategoryName} className="menu-category"><div className="category-title"><h3>{category.CategoryName}</h3><span>{categoryItems.length} options</span></div><div className="food-grid">{categoryItems.map(item => <Card key={item._id || item.id} foodItems={item} options={item.options} />)}</div></div>;
+        })}
+        {!loading && !visibleItems.length && <div className="menu-state"><strong>No dishes found.</strong><span>Try a different search or browse all categories.</span></div>}
+        <div className="load-more">{loading && foodItems.length > 0 && <span>Loading more...</span>}{!loading && page < pages && <button className="secondary-button" onClick={() => loadPage(page + 1)}>Load more dishes <span>↓</span></button>}</div>
+      </section>
 
         <Footer />
-        <div />
-      </div>
-    </>
+    </main>
   )
 
 }

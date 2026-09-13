@@ -1,33 +1,25 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useDispatchCart, useCart } from './ContextReducer';
+import { useNavigate } from 'react-router-dom';
 function Card(props) {
     let dispatch = useDispatchCart()
     let options = props.options
     let priceOptions = options.length > 0 ? Object.keys(options[0]) : [];
     let data = useCart()
     let priceRef = useRef()
+    const navigate = useNavigate();
     const [qty, setQty] = useState(1)
     const [size, setSize] = useState(priceOptions[0] || "")
     const [finalPrice, setFinalPrice] = useState(0);
 
     const handleAddtocart = async () => {
-        let food = []
-        for (const item of data) {
-            if (item.id === props.foodItems._id) {
-                food = item;
-                break;
-            }
+        if (!localStorage.getItem("authToken")) {
+            navigate('/Login')
+            return
         }
-        if (!food.length === 0) {
-            if (food.size === size) {
-                await dispatch({ type: "UPDATE", id: props.foodItems._id, price: finalPrice, qty: qty })
-                return
-            }
-            else if (!food.size === size) {
-                await dispatch({ type: "ADD", id: props.foodItems._id, name: props.foodItems.name, img: props.foodItems.img, price: finalPrice, qty: qty, size: size })
-                return
-                //console.log(data)
-            }
+        const food = data.find((item) => item.id === props.foodItems._id && item.size === size)
+        if (food) {
+            await dispatch({ type: "UPDATE", id: food.id, size: food.size, price: finalPrice, qty: qty })
             return
         }
         await dispatch({ type: "ADD", id: props.foodItems._id, name: props.foodItems.name, img: props.foodItems.img, price: finalPrice, qty: qty, size: size })
