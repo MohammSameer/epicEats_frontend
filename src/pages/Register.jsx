@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { backendurl } from '../Apipath';
 
 const Register = () => {
@@ -8,13 +9,21 @@ const Register = () => {
   });
 
   const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
+
+  const getErrorMessage = (errorResponse) => {
+    if (Array.isArray(errorResponse)) {
+      return errorResponse.map((error) => error.msg || error.message || String(error)).join(' ');
+    }
+    return errorResponse || "We couldn't create your account. Please check your details.";
+  };
 
   const validate = (name, value, updatedCredentials) => {
     let error = "";
 
     if (!value.trim()) {
       error = `${name} is required.`;
-      error = 'lastName is required';
     } else {
       if (name === "email" && !/^\S+@\S+\.\S+$/.test(value)) {
         error = "Invalid email format.";
@@ -44,69 +53,38 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    Object.keys(credentials).forEach(key => validate(key, credentials[key], credentials));
-    if (Object.values(errors).some(e => e)) return;
+    const nextErrors = Object.keys(credentials).reduce((result, key) => ({ ...result, [key]: validate(key, credentials[key], credentials) }), {});
+    setErrors(nextErrors);
+    if (Object.values(nextErrors).some(Boolean)) return;
 
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(`${backendurl}/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(credentials)
+      });
 
-    const response = await fetch(`${backendurl}/register`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(credentials)
-    });
-
-    const json = await response.json();
-    if (!json.success){
-      console.log(json.errors)
-      alert("Enter valid credentials");
-    } 
-    else alert("Registered successfully!");
+      const json = await response.json();
+      if (!json.success) setErrors({ form: getErrorMessage(json.errors || json.message) });
+      else navigate('/Login');
+    } catch (err) {
+      setErrors({ form: "We couldn't reach the kitchen right now. Please try again." });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", flexDirection: "column" }} >
-      <h1 style={{ textAlign: "center", marginTop: "10px", marginBottom: "40px", textShadow: "4px 4px 8px rgba(0, 0, 0, 0.4)" }}>Registration</h1>
-
-      <form onSubmit={handleSubmit} style={{ alignContent: "center", border: "3px solid black", width: "50%", maxWidth: "600px", borderRadius: "10px", backgroundColor: "#f8f9fa", padding: "10px", boxShadow: "4px 4px 10px rgba(0, 0, 0, 0.3)" }}>
-        <div className="row">
-          <div className="col">
-            <label htmlFor="exampleFirstName" style={{ fontWeight: "bold" }}>First Name</label>
-            <input type="text" className="form-control" name='firstName' value={credentials.firstName} placeholder="First name" onChange={onchange} aria-label="First name" />
-            {errors.firstName && <div className="text-danger">{errors.firstName}</div>}
-          </div>
-          <div className="col">
-            <label htmlFor="exampleLastName" style={{ fontWeight: "bold" }}>Last Name</label>
-            <input type="text" className="form-control" name='lastName' value={credentials.lastName} placeholder="Last name" onChange={onchange} aria-label="Last name" />
-            {errors.lastName && <div className="text-danger">{errors.lastName}</div>}
-          </div>
-        </div>
-        <div className="mb-2">
-          <label htmlFor="exampleInputEmail1" className="form-label" style={{ fontWeight: "bold" }} >Email Address</label>
-          <input type="email" className="form-control" name='email' value={credentials.email} id="exampleInputEmail1" onChange={onchange} aria-describedby="emailHelp" placeholder="Enter your email" />
-          {errors.email && <div className="text-danger">{errors.email}</div>}
-          <div id="emailHelp" className="form-text">We'll never share your email with anyone else.</div>
-        </div>
-        <div className="mb-2">
-          <label htmlFor="phoneNumber" className="form-label" style={{ fontWeight: "bold" }} >Phone Number</label>
-          <input type="number" className="form-control" name='phoneNumber' id="phoneNumber" value={credentials.phoneNumber} aria-describedby="number" onChange={onchange} placeholder="Enter your moblie number" />
-          {errors.phoneNumber && <div className="text-danger">{errors.phoneNumber}</div>}
-        </div>
-        <div className="mb-2">
-          <label htmlFor="exampleInputPassword1" className="form-label" style={{ fontWeight: "bold" }} >Password</label>
-          <input type="password" className="form-control" id="exampleInputPassword1" name='password' value={credentials.password} onChange={onchange} placeholder="Enter password" />
-          {errors.password && <div className="text-danger">{errors.password}</div>}
-        </div>
-        <div id="passwordHelpBlock" className="form-text">
-          Your password must be 8-20 characters long, contain letters and numbers, and must not contain spaces, special characters, or emoji.
-        </div>
-        <div className="mb-2">
-          <label htmlFor="confirmPassword" className="form-label" style={{ fontWeight: "bold" }} >Confirm Password</label>
-          <input type="password" className="form-control" id="confirmPassword" name='confirmPassword' value={credentials.confirmPassword} onChange={onchange} placeholder="Renter same password" />
-          {errors.confirmPassword && <div className="text-danger">{errors.confirmPassword}</div>}
-        </div>
-        <button type="submit" className="btn btn-primary">Register</button>
-        <a className='m-3 btn btn-danger' href='./Login' style={{ marginLeft: "300px" }}>click here to login</a>
-      </form>
-    </div>
+    <main className="auth-page"><section className="auth-panel auth-panel-register">
+      <div className="auth-aside"><span className="eyebrow">Join the table</span><h1>Your next favourite meal is waiting.</h1><p>Create an account for faster checkout, easy reorders, and a little more deliciousness.</p><span className="auth-aside-mark">✦</span></div>
+      <form className="auth-form" onSubmit={handleSubmit}><div className="form-heading"><span className="form-icon">+</span><h2>Create account</h2><p>It only takes a minute.</p></div>
+        <div className="form-grid"><div className="field-group"><label htmlFor="firstName">First name</label><input type="text" id="firstName" name="firstName" value={credentials.firstName} placeholder="Alex" onChange={onchange} required />{errors.firstName && <small className="field-error">{errors.firstName}</small>}</div><div className="field-group"><label htmlFor="lastName">Last name</label><input type="text" id="lastName" name="lastName" value={credentials.lastName} placeholder="Morgan" onChange={onchange} required />{errors.lastName && <small className="field-error">{errors.lastName}</small>}</div></div>
+        <div className="field-group"><label htmlFor="register-email">Email address</label><input type="email" id="register-email" name="email" value={credentials.email} onChange={onchange} placeholder="you@example.com" required />{errors.email && <small className="field-error">{errors.email}</small>}</div>
+        <div className="field-group"><label htmlFor="phoneNumber">Phone number</label><input type="tel" id="phoneNumber" name="phoneNumber" value={credentials.phoneNumber} onChange={onchange} placeholder="10 digit number" required />{errors.phoneNumber && <small className="field-error">{errors.phoneNumber}</small>}</div>
+        <div className="form-grid"><div className="field-group"><label htmlFor="register-password">Password</label><input type="password" id="register-password" name="password" value={credentials.password} onChange={onchange} placeholder="8+ characters" required />{errors.password && <small className="field-error">{errors.password}</small>}</div><div className="field-group"><label htmlFor="confirmPassword">Confirm password</label><input type="password" id="confirmPassword" name="confirmPassword" value={credentials.confirmPassword} onChange={onchange} placeholder="Repeat password" required />{errors.confirmPassword && <small className="field-error">{errors.confirmPassword}</small>}</div></div>
+        {errors.form && <p className="form-error" role="alert">{errors.form}</p>}<button type="submit" className="primary-button" disabled={isSubmitting}>{isSubmitting ? "Creating account..." : "Create account"}<span>→</span></button><p className="auth-switch">Already have an account? <Link to="/Login">Sign in</Link></p>
+      </form></section></main>
   )
 }
 export default Register

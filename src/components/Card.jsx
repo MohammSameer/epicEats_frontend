@@ -17,23 +17,9 @@ function Card(props) {
             navigate('/Login')
             return
         }
-        let food = []
-        for (const item of data) {
-            if (item.id === props.foodItems._id) {
-                food = item;
-                break;
-            }
-        }
-        if (!food.length === 0) {
-            if (food.size === size) {
-                await dispatch({ type: "UPDATE", id: props.foodItems._id, price: finalPrice, qty: qty })
-                return
-            }
-            else if (!food.size === size) {
-                await dispatch({ type: "ADD", id: props.foodItems._id, name: props.foodItems.name, img: props.foodItems.img, price: finalPrice, qty: qty, size: size })
-                return
-                //console.log(data)
-            }
+        const food = data.find((item) => item.id === props.foodItems._id && item.size === size)
+        if (food) {
+            await dispatch({ type: "UPDATE", id: food.id, size: food.size, price: finalPrice, qty: qty })
             return
         }
         await dispatch({ type: "ADD", id: props.foodItems._id, name: props.foodItems.name, img: props.foodItems.img, price: finalPrice, qty: qty, size: size })
