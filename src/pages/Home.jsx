@@ -14,33 +14,51 @@ const Home = () => {
   const [loading, setLoading] = useState(false);
   const [activeCategory, setActiveCategory] = useState('All');
 
-  // fetch categories once and initial page of items
+  // Load the menu and categories independently so a slow category request
+  // cannot block the first batch of food items from rendering.
   useEffect(() => {
-    const fetchInitial = async () => {
+    let isMounted = true;
+    let pendingRequests = 2;
+    const requestFinished = () => {
+      pendingRequests -= 1;
+      if (pendingRequests === 0 && isMounted) setLoading(false);
+    };
+
+    let cachedItems = null;
+    try {
+      cachedItems = sessionStorage.getItem('foodItems_page_1');
+    } catch (err) {
+      // Continue without a browser cache when storage is unavailable.
+    }
+    if (cachedItems) {
       try {
-        setLoading(true);
-        const [categoriesRes, itemsRes] = await Promise.all([
-          axios.get(`${backendurl}/api/food-categories`),
-          axios.get(`${backendurl}/api/food-items`, { params: { page: 1, limit: 50 } })
-        ]);
+        setFoodItems(JSON.parse(cachedItems));
+        setLoading(false);
+      } catch (err) {
+        try { sessionStorage.removeItem('foodItems_page_1'); } catch (storageError) {}
+      }
+    }
 
-        setFoodCategories(categoriesRes.data);
-
-        // if backend returns wrapped object { items, total, page, pages }
+    axios.get(`${backendurl}/api/food-items`, { params: { page: 1, limit: 50 } })
+      .then((itemsRes) => {
+        if (!isMounted) return;
         const items = itemsRes.data.items || itemsRes.data;
         setFoodItems(items);
         setPage(itemsRes.data.page || 1);
         setPages(itemsRes.data.pages || 1);
+        try { sessionStorage.setItem('foodItems_page_1', JSON.stringify(items)); } catch (err) {}
+      })
+      .catch((err) => console.error('Error fetching food items:', err))
+      .finally(requestFinished);
 
-        // simple session cache to avoid re-fetch on navigation
-        try { sessionStorage.setItem('foodItems_page_1', JSON.stringify(items)); } catch (e) {}
-      } catch (err) {
-        console.error("Error fetching data:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchInitial();
+    axios.get(`${backendurl}/api/food-categories`)
+      .then((categoriesRes) => {
+        if (isMounted) setFoodCategories(categoriesRes.data);
+      })
+      .catch((err) => console.error('Error fetching food categories:', err))
+      .finally(requestFinished);
+
+    return () => { isMounted = false; };
   }, []);
 
   // load a specific page (used by Load more)
